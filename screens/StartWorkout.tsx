@@ -29,7 +29,7 @@ function WorkoutExerciseItem({ exercise, onRemove }: { exercise: Exercise; onRem
   );
 }
 
-export default function StartWorkout({ onWorkoutComplete }: { onWorkoutComplete: (workout: Workout) => void }) {
+export default function StartWorkout({ onWorkoutComplete, lastWorkout }: { onWorkoutComplete: (workout: Workout) => void; lastWorkout: Workout | null }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
   const [query, setQuery] = useState('');
@@ -91,6 +91,21 @@ export default function StartWorkout({ onWorkoutComplete }: { onWorkoutComplete:
         <Text style={styles.buttonText}>Start</Text>
       </TouchableOpacity>
 
+      {lastWorkout && (
+        <View style={styles.lastWorkoutCard}>
+          <View style={styles.lastWorkoutHeader}>
+            <Text style={styles.lastWorkoutLabel}>Last workout</Text>
+            <Text style={styles.lastWorkoutDate}>
+              {lastWorkout.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+            </Text>
+          </View>
+          <Text style={styles.lastWorkoutName}>{lastWorkout.name}</Text>
+          <Text style={styles.lastWorkoutExercises}>
+            {lastWorkout.exercises.map(e => e.name).join(' · ')}
+          </Text>
+        </View>
+      )}
+
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -149,7 +164,6 @@ export default function StartWorkout({ onWorkoutComplete }: { onWorkoutComplete:
                     style={styles.searchBar}
                     placeholder="Search exercises..."
                     placeholderTextColor="#999"
-                    autoFocus
                     value={query}
                     onChangeText={setQuery}
                   />
@@ -201,6 +215,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
+    paddingHorizontal: 24,
   },
   button: {
     backgroundColor: '#000',
@@ -298,6 +313,40 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  lastWorkoutCard: {
+    marginTop: 32,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 12,
+    padding: 16,
+  },
+  lastWorkoutHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  lastWorkoutLabel: {
+    fontSize: 12,
+    color: '#aaa',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  lastWorkoutDate: {
+    fontSize: 12,
+    color: '#aaa',
+  },
+  lastWorkoutName: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  lastWorkoutExercises: {
+    fontSize: 13,
+    color: '#555',
   },
   overlay: {
     flex: 1,

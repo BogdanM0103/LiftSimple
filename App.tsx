@@ -28,7 +28,7 @@ export default function App() {
         }}
       >
         <Tab.Screen name="Start Workout">
-          {() => <StartWorkout onWorkoutComplete={addWorkout} />}
+          {() => <StartWorkout onWorkoutComplete={addWorkout} lastWorkout={workouts[0] ?? null} />}
         </Tab.Screen>
         <Tab.Screen name="History">
           {() => <History workouts={workouts} />}
