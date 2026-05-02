@@ -2,19 +2,25 @@ import { useState, useRef } from 'react';
 import { View, TouchableOpacity, Text, Modal, Animated, TextInput, FlatList, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { exercises, Exercise } from '../data/exercises';
 
+const MUSCLES = ['Chest', 'Back', 'Shoulders', 'Triceps', 'Biceps', 'Legs'];
+
 export default function StartWorkout() {
   const [modalVisible, setModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
   const [query, setQuery] = useState('');
+  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [workoutExercises, setWorkoutExercises] = useState<Exercise[]>([]);
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
-  const results = query.trim()
-    ? exercises.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
-    : exercises;
+  const results = exercises.filter(e => {
+    const matchesQuery = query.trim() === '' || e.name.toLowerCase().includes(query.toLowerCase());
+    const matchesMuscle = selectedMuscle === null || e.muscle === selectedMuscle;
+    return matchesQuery && matchesMuscle;
+  });
 
   function openExerciseModal() {
     setQuery('');
+    setSelectedMuscle(null);
     setExerciseModalVisible(true);
     scaleAnim.setValue(0);
     Animated.spring(scaleAnim, {
@@ -87,6 +93,19 @@ export default function StartWorkout() {
                     value={query}
                     onChangeText={setQuery}
                   />
+                  <View style={styles.filterRow}>
+                    {MUSCLES.map(muscle => (
+                      <TouchableOpacity
+                        key={muscle}
+                        style={[styles.filterChip, selectedMuscle === muscle && styles.filterChipActive]}
+                        onPress={() => setSelectedMuscle(selectedMuscle === muscle ? null : muscle)}
+                      >
+                        <Text style={[styles.filterChipText, selectedMuscle === muscle && styles.filterChipTextActive]}>
+                          {muscle}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                   {results.length > 0 && (
                     <FlatList
                       data={results}
@@ -192,6 +211,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '85%',
     maxHeight: '70%',
+    overflow: 'hidden',
   },
   cardTitle: {
     fontSize: 20,
@@ -206,6 +226,31 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: '#000',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+    marginBottom: 4,
+    gap: 8,
+  },
+  filterChip: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  filterChipActive: {
+    backgroundColor: '#000',
+    borderColor: '#000',
+  },
+  filterChipText: {
+    fontSize: 13,
+    color: '#555',
+  },
+  filterChipTextActive: {
+    color: '#fff',
   },
   resultsList: {
     marginTop: 8,
