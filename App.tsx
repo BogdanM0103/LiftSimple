@@ -1,20 +1,27 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import StartWorkout from './screens/StartWorkout';
+import History from './screens/History';
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+    <NavigationContainer>
       <StatusBar style="auto" />
-    </View>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarIcon: () => null,
+          tabBarIconStyle: { display: 'none' },
+          tabBarLabelStyle: { fontSize: 15 },
+          tabBarItemStyle: { justifyContent: 'center' },
+        }}
+      >
+        <Tab.Screen name="Start Workout" component={StartWorkout} />
+        <Tab.Screen name="History" component={History} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
