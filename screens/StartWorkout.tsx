@@ -1,12 +1,20 @@
 import { useState, useRef } from 'react';
-import { View, TouchableOpacity, Text, Modal, Animated, TextInput, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, TouchableOpacity, Text, Modal, Animated, TextInput, FlatList, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { exercises, Exercise } from '../data/exercises';
 
 export default function StartWorkout() {
   const [modalVisible, setModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
+  const [query, setQuery] = useState('');
+  const [workoutExercises, setWorkoutExercises] = useState<Exercise[]>([]);
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
+  const results = query.trim()
+    ? exercises.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
+    : [];
+
   function openExerciseModal() {
+    setQuery('');
     setExerciseModalVisible(true);
     scaleAnim.setValue(0);
     Animated.spring(scaleAnim, {
@@ -22,6 +30,13 @@ export default function StartWorkout() {
       duration: 150,
       useNativeDriver: true,
     }).start(() => setExerciseModalVisible(false));
+  }
+
+  function addExercise(exercise: Exercise) {
+    if (!workoutExercises.find(e => e.name === exercise.name)) {
+      setWorkoutExercises(prev => [...prev, exercise]);
+    }
+    closeExerciseModal();
   }
 
   return (
@@ -40,6 +55,13 @@ export default function StartWorkout() {
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
           <Text style={styles.modalTitle}>Workout</Text>
+
+          {workoutExercises.map(exercise => (
+            <View key={exercise.name} style={styles.workoutExerciseItem}>
+              <Text style={styles.workoutExerciseName}>{exercise.name}</Text>
+              <Text style={styles.workoutExerciseMuscle}>{exercise.muscle}</Text>
+            </View>
+          ))}
 
           <TouchableOpacity style={styles.addButton} onPress={openExerciseModal}>
             <Text style={styles.addButtonText}>Add exercise</Text>
@@ -62,7 +84,28 @@ export default function StartWorkout() {
                     placeholder="Search exercises..."
                     placeholderTextColor="#999"
                     autoFocus
+                    value={query}
+                    onChangeText={setQuery}
                   />
+                  {results.length > 0 && (
+                    <FlatList
+                      data={results}
+                      keyExtractor={item => item.name}
+                      style={styles.resultsList}
+                      keyboardShouldPersistTaps="handled"
+                      renderItem={({ item }) => (
+                        <View style={styles.resultItem}>
+                          <View>
+                            <Text style={styles.resultName}>{item.name}</Text>
+                            <Text style={styles.resultMuscle}>{item.muscle}</Text>
+                          </View>
+                          <TouchableOpacity style={styles.addExerciseButton} onPress={() => addExercise(item)}>
+                            <Text style={styles.addExerciseButtonText}>Add</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    />
+                  )}
                 </Animated.View>
               </TouchableWithoutFeedback>
             </View>
@@ -108,7 +151,22 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginTop: 24,
-    marginBottom: 32,
+    marginBottom: 24,
+  },
+  workoutExerciseItem: {
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    marginBottom: 4,
+  },
+  workoutExerciseName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  workoutExerciseMuscle: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
   },
   addButton: {
     borderWidth: 1,
@@ -116,6 +174,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
+    marginTop: 16,
   },
   addButtonText: {
     fontSize: 16,
@@ -131,7 +190,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 24,
-    width: '80%',
+    width: '85%',
+    maxHeight: '70%',
   },
   cardTitle: {
     fontSize: 20,
@@ -146,5 +206,36 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: '#000',
+  },
+  resultsList: {
+    marginTop: 8,
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  addExerciseButton: {
+    backgroundColor: '#000',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  addExerciseButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  resultName: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  resultMuscle: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
   },
 });
