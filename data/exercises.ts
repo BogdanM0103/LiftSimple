@@ -32,4 +32,8 @@ export const exercises: Exercise[] = [
   { name: 'V-Bar Pushdowns', muscle: 'Triceps' },
   { name: 'Overhead Pushdowns', muscle: 'Triceps' },
   { name: 'French Press', muscle: 'Triceps' },
+  { name: 'Military Press', muscle: 'Shoulders' },
+  { name: 'Lateral Raises', muscle: 'Shoulders' },
+  { name: 'Bow Pulls', muscle: 'Shoulders' },
+  { name: 'Rear Raises', muscle: 'Shoulders' },
 ];
