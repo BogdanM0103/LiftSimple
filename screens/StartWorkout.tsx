@@ -1,15 +1,42 @@
 import { useState, useRef } from 'react';
 import { View, TouchableOpacity, Text, Modal, Animated, TextInput, FlatList, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { exercises, Exercise } from '../data/exercises';
+import { Workout } from '../data/types';
 
 const MUSCLES = ['Chest', 'Back', 'Shoulders', 'Triceps', 'Biceps', 'Legs'];
 
-export default function StartWorkout() {
+function WorkoutExerciseItem({ exercise, onRemove }: { exercise: Exercise; onRemove: () => void }) {
+  const opacity = useRef(new Animated.Value(1)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  function handleRemove() {
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 0, duration: 250, useNativeDriver: true }),
+      Animated.timing(translateX, { toValue: 40, duration: 250, useNativeDriver: true }),
+    ]).start(onRemove);
+  }
+
+  return (
+    <Animated.View style={[styles.workoutExerciseItem, { opacity, transform: [{ translateX }] }]}>
+      <View>
+        <Text style={styles.workoutExerciseName}>{exercise.name}</Text>
+        <Text style={styles.workoutExerciseMuscle}>{exercise.muscle}</Text>
+      </View>
+      <TouchableOpacity onPress={handleRemove}>
+        <Text style={styles.removeText}>✕</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+export default function StartWorkout({ onWorkoutComplete }: { onWorkoutComplete: (workout: Workout) => void }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [workoutExercises, setWorkoutExercises] = useState<Exercise[]>([]);
+  const [workoutName, setWorkoutName] = useState('Workout');
+  const [isEditingName, setIsEditingName] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
   const results = exercises.filter(e => {
@@ -45,6 +72,19 @@ export default function StartWorkout() {
     closeExerciseModal();
   }
 
+  function confirmWorkout() {
+    onWorkoutComplete({
+      id: Date.now().toString(),
+      name: workoutName,
+      exercises: workoutExercises,
+      date: new Date(),
+    });
+    setModalVisible(false);
+    setWorkoutExercises([]);
+    setWorkoutName('Workout');
+    setIsEditingName(false);
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
@@ -60,18 +100,38 @@ export default function StartWorkout() {
           <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>Workout</Text>
+          <View style={styles.titleRow}>
+            <View style={styles.titleButtons}>
+              <TouchableOpacity onPress={() => setIsEditingName(!isEditingName)} style={styles.editButton}>
+                <Text style={styles.editButtonText}>{isEditingName ? '✓' : '✎'}</Text>
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.modalTitle}
+              value={workoutName}
+              onChangeText={setWorkoutName}
+              editable={isEditingName}
+              selectTextOnFocus
+            />
+          </View>
 
           {workoutExercises.map(exercise => (
-            <View key={exercise.name} style={styles.workoutExerciseItem}>
-              <Text style={styles.workoutExerciseName}>{exercise.name}</Text>
-              <Text style={styles.workoutExerciseMuscle}>{exercise.muscle}</Text>
-            </View>
+            <WorkoutExerciseItem
+              key={exercise.name}
+              exercise={exercise}
+              onRemove={() => setWorkoutExercises(prev => prev.filter(e => e.name !== exercise.name))}
+            />
           ))}
 
           <TouchableOpacity style={styles.addButton} onPress={openExerciseModal}>
             <Text style={styles.addButtonText}>Add exercise</Text>
           </TouchableOpacity>
+
+          {workoutExercises.length > 0 && (
+            <TouchableOpacity style={styles.confirmWorkoutButton} onPress={confirmWorkout}>
+              <Text style={styles.confirmWorkoutText}>Confirm Workout</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <Modal
@@ -166,17 +226,57 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#000',
   },
-  modalTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 24,
     marginBottom: 24,
   },
+  titleButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  modalTitle: {
+    flex: 1,
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  editButton: {
+    marginRight: 8,
+  },
+  editButtonText: {
+    fontSize: 20,
+    color: '#aaa',
+  },
   workoutExerciseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
     marginBottom: 4,
+  },
+  removeText: {
+    fontSize: 18,
+    color: '#999',
+  },
+  confirmWorkoutButton: {
+    position: 'absolute',
+    bottom: 32,
+    left: 24,
+    right: 24,
+    backgroundColor: '#000',
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  confirmWorkoutText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
   },
   workoutExerciseName: {
     fontSize: 16,
