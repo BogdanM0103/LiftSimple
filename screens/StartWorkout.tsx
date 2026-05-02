@@ -11,7 +11,7 @@ export default function StartWorkout() {
 
   const results = query.trim()
     ? exercises.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
-    : [];
+    : exercises;
 
   function openExerciseModal() {
     setQuery('');
