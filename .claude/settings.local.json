@@ -6,7 +6,10 @@
       "Bash(mv _tmp_app/* .)",
       "Bash(mv _tmp_app/.* .)",
       "Bash(rm -rf _tmp_app)",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
