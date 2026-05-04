@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StartWorkout from './screens/StartWorkout';
 import History from './screens/History';
+import Stats from './screens/Stats';
 import { Workout } from './data/types';
 
 const Tab = createBottomTabNavigator();
@@ -51,6 +52,9 @@ export default function App() {
         </Tab.Screen>
         <Tab.Screen name="History">
           {() => <History workouts={workouts} />}
+        </Tab.Screen>
+        <Tab.Screen name="Stats">
+          {() => <Stats workouts={workouts} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
